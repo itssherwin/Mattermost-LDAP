@@ -51,13 +51,12 @@ else
         $user=strtolower(strip_tags(htmlspecialchars(trim($_POST['user']))));
         $password=$_POST['password'];
 
-        // Validate username against a safe pattern (alphanumeric, dot, underscore, dash)
-        if (!preg_match('/^[a-zA-Z0-9._-]{1,64}$/', $user)) {
-            messageShow($prompt_template, 'Username contains invalid characters. Please try again.');
+        // Sherwin Ldap-escape
+        if (!filter_var($user, FILTER_VALIDATE_EMAIL)) {
+            messageShow($prompt_template, 'Username contains invalid charecters.');
             exit();
         }
-
-        // Escape LDAP special characters in username
+        
         if (!function_exists('ldap_escape')) {
             function ldap_escape($value) {
                 return preg_replace_callback('/[\\x00-\\x1F\\x7F\\(\\)\\\\\\*\\0]/', function ($matches) {
@@ -66,6 +65,7 @@ else
             }
         }
         $user = ldap_escape($user);
+        // Sherwin Ldap-escape
 
         // Open a LDAP connection
         $ldap = new LDAP($ldap_host,$ldap_port,$ldap_version,$ldap_start_tls);
